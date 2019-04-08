@@ -28,7 +28,7 @@ options:
     required: yes
   template:
     description:
-    - The name of the template to change.
+    - The name of the template.
     type: str
     required: yes
   anp:
@@ -125,7 +125,7 @@ seealso:
 - module: mso_schema_template_anp
 - module: mso_schema_template_anp_epg_subnet
 - module: mso_schema_template_bd
-- module: mso_schema_template_contract
+- module: mso_schema_template_contract_filter
 extends_documentation_fragment: mso
 '''
 
@@ -285,7 +285,7 @@ def main():
             proxyArp=intersite_multicaste_source,
             # FIXME: Missing functionality
             # uSegAttrs=[],
-            # contractRelationships=[],
+            contractRelationships=[],
             subnets=subnets,
             bdRef=bd_ref,
         )

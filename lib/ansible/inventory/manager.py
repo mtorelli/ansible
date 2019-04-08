@@ -270,6 +270,8 @@ class InventoryManager(object):
                     try:
                         # FIXME in case plugin fails 1/2 way we have partial inventory
                         plugin.parse(self._inventory, self._loader, source, cache=cache)
+                        if getattr(plugin, '_cache', None):
+                            plugin.update_cache_if_changed()
                         parsed = True
                         display.vvv('Parsed %s inventory source with %s plugin' % (source, plugin_name))
                         break
@@ -606,7 +608,7 @@ class InventoryManager(object):
             for x in subset_patterns:
                 if x.startswith("@"):
                     fd = open(x[1:])
-                    results.extend(fd.read().split("\n"))
+                    results.extend([l.strip() for l in fd.read().split("\n")])
                     fd.close()
                 else:
                     results.append(x)

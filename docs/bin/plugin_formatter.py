@@ -321,6 +321,10 @@ def get_plugin_info(module_dir, limit_to=None, verbose=False):
         if module_categories:
             primary_category = module_categories[0]
 
+        if not doc:
+            display.error("*** ERROR: DOCUMENTATION section missing for %s. ***" % module_path)
+            continue
+
         if 'options' in doc and doc['options'] is None:
             display.error("*** ERROR: DOCUMENTATION.options must be a dictionary/hash when used. ***")
             pos = getattr(doc, "ansible_pos", None)
@@ -554,7 +558,12 @@ def process_plugins(module_map, templates, outputname, output_dir, ansible_versi
 
         display.v('about to template %s' % module)
         display.vvvvv(pp.pformat(doc))
-        text = templates['plugin'].render(doc)
+        try:
+            text = templates['plugin'].render(doc)
+        except Exception as e:
+            display.warning(msg="Could not parse %s due to %s" % (module, e))
+            continue
+
         if LooseVersion(jinja2.__version__) < LooseVersion('2.10'):
             # jinja2 < 2.10's indent filter indents blank lines.  Cleanup
             text = re.sub(' +\n', '\n', text)

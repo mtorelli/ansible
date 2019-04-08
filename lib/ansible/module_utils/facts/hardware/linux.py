@@ -30,7 +30,7 @@ from multiprocessing.pool import ThreadPool
 
 from ansible.module_utils._text import to_text
 from ansible.module_utils.six import iteritems
-from ansible.module_utils.basic import bytes_to_human
+from ansible.module_utils.common.text.formatters import bytes_to_human
 from ansible.module_utils.facts.hardware.base import Hardware, HardwareCollector
 from ansible.module_utils.facts.utils import get_file_content, get_file_lines, get_mount_size
 
@@ -159,6 +159,7 @@ class LinuxHardware(Hardware):
         i = 0
         vendor_id_occurrence = 0
         model_name_occurrence = 0
+        processor_occurence = 0
         physid = 0
         coreid = 0
         sockets = {}
@@ -206,6 +207,8 @@ class LinuxHardware(Hardware):
                     vendor_id_occurrence += 1
                 if key == 'model name':
                     model_name_occurrence += 1
+                if key == 'processor':
+                    processor_occurence += 1
                 i += 1
             elif key == 'physical id':
                 physid = data[1].strip()
@@ -228,6 +231,12 @@ class LinuxHardware(Hardware):
         if vendor_id_occurrence > 0:
             if vendor_id_occurrence == model_name_occurrence:
                 i = vendor_id_occurrence
+
+        # The fields for ARM CPUs do not always include 'vendor_id' or 'model name',
+        # and sometimes includes both 'processor' and 'Processor'.
+        # Always use 'processor' count for ARM systems
+        if collected_facts.get('ansible_architecture').startswith(('armv', 'aarch')):
+            i = processor_occurence
 
         # FIXME
         if collected_facts.get('ansible_architecture') != 's390x':
