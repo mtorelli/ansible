@@ -159,6 +159,8 @@ options:
             - The IDs used in the expression must exactly match the ones
               defined in the filter conditions. No condition can remain unused or omitted.
             - Required for custom expression filters.
+            - Use sequential IDs that start at "A". If non-sequential IDs are used, Zabbix re-indexes them.
+              This makes each module run notice the difference in IDs and update the action.
     default_message:
         description:
             - Problem message default text.
@@ -227,9 +229,11 @@ options:
             message:
                 description:
                     - Operation message text.
+                    - Will check the 'default message' and use the text from I(default_message) if this and I(default_subject) are not specified
             subject:
                 description:
                     - Operation message subject.
+                    - Will check the 'default message' and use the text from I(default_subject) if this and I(default_subject) are not specified
             media_type:
                 description:
                     - Media type that will be used to send the message.
@@ -801,10 +805,11 @@ class Action(object):
                 'enabled',
                 'disabled'], kwargs['status'])
         }
-        if float(self._zapi.api_version().rsplit('.', 1)[0]) >= 4.0:
-            _params['pause_suppressed'] = '1' if kwargs['pause_in_maintenance'] else '0'
-        else:
-            _params['maintenance_mode'] = '1' if kwargs['pause_in_maintenance'] else '0'
+        if kwargs['event_source'] == 'trigger':
+            if float(self._zapi.api_version().rsplit('.', 1)[0]) >= 4.0:
+                _params['pause_suppressed'] = '1' if kwargs['pause_in_maintenance'] else '0'
+            else:
+                _params['maintenance_mode'] = '1' if kwargs['pause_in_maintenance'] else '0'
 
         return _params
 
@@ -921,7 +926,7 @@ class Operations(object):
         """
         try:
             return {
-                'default_msg': '0' if 'message' in operation or 'subject' in operation else '1',
+                'default_msg': '0' if operation.get('message') is not None or operation.get('subject')is not None else '1',
                 'mediatypeid': self._zapi_wrapper.get_mediatype_by_mediatype_name(
                     operation.get('media_type')
                 ) if operation.get('media_type') is not None else '0',
@@ -1660,12 +1665,12 @@ def main():
             state=dict(type='str', required=False, default='present', choices=['present', 'absent']),
             status=dict(type='str', required=False, default='enabled', choices=['enabled', 'disabled']),
             pause_in_maintenance=dict(type='bool', required=False, default=True),
-            default_message=dict(type='str', required=False, default=None),
-            default_subject=dict(type='str', required=False, default=None),
-            recovery_default_message=dict(type='str', required=False, default=None),
-            recovery_default_subject=dict(type='str', required=False, default=None),
-            acknowledge_default_message=dict(type='str', required=False, default=None),
-            acknowledge_default_subject=dict(type='str', required=False, default=None),
+            default_message=dict(type='str', required=False, default=''),
+            default_subject=dict(type='str', required=False, default=''),
+            recovery_default_message=dict(type='str', required=False, default=''),
+            recovery_default_subject=dict(type='str', required=False, default=''),
+            acknowledge_default_message=dict(type='str', required=False, default=''),
+            acknowledge_default_subject=dict(type='str', required=False, default=''),
             conditions=dict(
                 type='list',
                 required=False,

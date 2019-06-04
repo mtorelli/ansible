@@ -60,6 +60,7 @@ options:
     - Whether the trigger is disabled or not. If true, the trigger will never result
       in a build.
     required: false
+    type: bool
   substitutions:
     description:
     - Substitutions data for Build resource.
@@ -160,7 +161,7 @@ options:
               be run directly. If not, the host will attempt to pull the image first,
               using the builder service account's credentials if necessary.
             - The Docker daemon's cache will already have the latest versions of all
-              of the officially supported build steps (U(https://github.com/GoogleCloudPlatform/cloud-builders).)
+              of the officially supported build steps (U(https://github.com/GoogleCloudPlatform/cloud-builders)).
             - The Docker daemon will also have cached many of the layers for some
               popular images, like "ubuntu", "debian", but they will be refreshed
               at the time you attempt to use them.
@@ -300,7 +301,7 @@ disabled:
   - Whether the trigger is disabled or not. If true, the trigger will never result
     in a build.
   returned: success
-  type: str
+  type: bool
 createTime:
   description:
   - Time when the trigger was created.
@@ -417,7 +418,7 @@ build:
             be run directly. If not, the host will attempt to pull the image first,
             using the builder service account's credentials if necessary.
           - The Docker daemon's cache will already have the latest versions of all
-            of the officially supported build steps (U(https://github.com/GoogleCloudPlatform/cloud-builders).)
+            of the officially supported build steps (U(https://github.com/GoogleCloudPlatform/cloud-builders)).
           - The Docker daemon will also have cached many of the layers for some popular
             images, like "ubuntu", "debian", but they will be refreshed at the time
             you attempt to use them.
@@ -541,7 +542,7 @@ def main():
             state=dict(default='present', choices=['present', 'absent'], type='str'),
             id=dict(type='str'),
             description=dict(type='str'),
-            disabled=dict(type='str'),
+            disabled=dict(type='bool'),
             substitutions=dict(type='dict'),
             filename=dict(type='str'),
             ignored_files=dict(type='list', elements='str'),
